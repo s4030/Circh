@@ -2,13 +2,9 @@ version: 2.1
 executors:
   my-custom-executor:
     docker:
-      - image: cimg/base:stable
-        auth:
-          # ensure you have first added these secrets
-          # visit app.circleci.com/settings/project/github/s4030/Circh/environment-variables
-          username: root 
+      - image: cimg/base:stabl
 jobs:
-  my-job-name:
+  my-job-name:e
 
     executor: my-custom-executor
     steps:
