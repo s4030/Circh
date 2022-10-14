@@ -6,8 +6,7 @@ executors:
         auth:
           # ensure you have first added these secrets
           # visit app.circleci.com/settings/project/github/s4030/Circh/environment-variables
-          username: root
-          password: root
+          username: root 
 jobs:
   my-job-name:
 
