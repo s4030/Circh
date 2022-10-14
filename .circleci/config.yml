@@ -1,30 +1,47 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-
-# Orbs are reusable packages of CircleCI configuration that you may share across projects, enabling you to create encapsulated, parameterized commands, jobs, and executors that can be used across multiple projects.
-# See: https://circleci.com/docs/2.0/orb-intro/
-orbs:
-  ruby: circleci/ruby@1.4.0
-
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build:
+  build_book:
     docker:
-      - image: cimg/ruby:3.1.0
-    executor: ruby/default
+      - image: circleci/ruby:2.6
     steps:
       - checkout
       - run:
-          name: Which bundler?
-          command: bundle -v
-      - ruby/bundle-install
+          name: Install Python and dependencies to build page HTML
+          command: |
+            sudo apt-get install python3-pip
+            pip3 install --user -r requirements.txt
+            pip3 install --user -U git+https://github.com/jupyter/jupyter-book.git
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+      - run:
+          name: Create book template and build page HTML
+          command: |
+            jupyter-book create mybook --content-folder content/
+            jupyter-book build ./mybook
+
+      - run:
+          name: Install ruby dependencies and build the book's website w/ the URL for CircleCI artifacts
+          command: |
+            cd mybook
+            make install
+            bundle exec jekyll build
+
+      # If we're on master, push to a gh-pages branch
+      - add_ssh_keys:
+          fingerprints:
+            - "16:ab:50:df:1b:35:74:27:cf:12:94:6c:7f:0d:03:9f"
+      - run:
+          name: Push to gh-pages (if on master)
+          command: |
+            if [ $CIRCLE_BRANCH	== "master" ]; then
+              pip3 install ghp-import
+              ghp-import -n -f -p mybook/_site;
+            else
+              echo "Skipping deploy because we aren't on master"
+            fi
+
+
 workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  version: 2
+  default:
     jobs:
-      - build
+      - build_book
