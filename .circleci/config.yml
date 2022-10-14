@@ -6,8 +6,8 @@ executors:
         auth:
           # ensure you have first added these secrets
           # visit app.circleci.com/settings/project/github/s4030/Circh/environment-variables
-          username: $DOCKER_HUB_USER
-          password: $DOCKER_HUB_PASSWORD
+          username: root
+          password: root
 jobs:
   my-job-name:
 
@@ -15,7 +15,7 @@ jobs:
     steps:
       - checkout
       - run: |
-          # echo Hello, World!
+          df -BG
 
 workflows:
   my-custom-workflow:
